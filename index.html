@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ShopBot — AI Customer Support | Portfolio Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --accent:#e94560;--accent2:#0f3460;--green:#16c79a;--amber:#f5a623;
+  --bg:#0d0d14;--surface:#16161f;--surface2:#1e1e2a;--surface3:#25252f;
+  --border:#2a2a38;--text:#f0f0f5;--muted:#8888a8;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);}
+
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;gap:16px;padding:14px 32px;
+  background:rgba(13,13,20,.9);backdrop-filter:blur(12px);
+  border-bottom:0.5px solid var(--border);
+}
+.logo-mark{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;flex-shrink:0;}
+.nav-title{font-size:15px;font-weight:500;}
+.nav-sub{font-size:11px;color:var(--muted);}
+.nav-badges{display:flex;gap:8px;margin-left:auto;}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;border:0.5px solid var(--border);color:var(--muted);}
+.badge.live{background:rgba(22,199,154,.12);color:var(--green);border-color:rgba(22,199,154,.3);}
+.badge.ai{background:rgba(233,69,96,.1);color:var(--accent);border-color:rgba(233,69,96,.3);}
+
+main{padding:90px 24px 40px;max-width:1100px;margin:0 auto;}
+
+.hero{text-align:center;padding:40px 0 48px;}
+.hero-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);border:0.5px solid rgba(233,69,96,.3);padding:4px 14px;border-radius:20px;margin-bottom:20px;}
+.hero h1{font-size:38px;font-weight:600;line-height:1.2;margin-bottom:14px;}
+.hero h1 span{color:var(--accent);}
+.hero p{font-size:15px;color:var(--muted);max-width:560px;margin:0 auto 28px;line-height:1.7;}
+.hero-stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;}
+.stat-num{font-size:28px;font-weight:600;}
+.stat-label{font-size:12px;color:var(--muted);margin-top:2px;}
+
+.tabs{display:flex;gap:4px;background:var(--surface2);border:0.5px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px;overflow-x:auto;}
+.tab-btn{flex:1;padding:10px 16px;font-size:13px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--muted);border-radius:8px;white-space:nowrap;transition:all .2s;font-family:var(--font);min-width:140px;}
+.tab-btn.active{background:var(--surface3);color:var(--text);box-shadow:0 0 0 0.5px var(--border);}
+.tab-btn:hover:not(.active){color:var(--text);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.chat-wrapper{display:grid;grid-template-columns:240px 1fr;gap:16px;height:600px;}
+.chat-sidebar{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.sidebar-title{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.quick-btn{padding:10px 12px;font-size:12px;text-align:left;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text);font-family:var(--font);transition:all .15s;line-height:1.4;}
+.quick-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(233,69,96,.06);}
+.quick-btn .ql{font-weight:500;display:block;margin-bottom:2px;}
+.quick-btn .qs{color:var(--muted);font-size:11px;}
+.status-block{margin-top:auto;padding-top:12px;border-top:0.5px solid var(--border);}
+.status-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:5px;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite;}
+.dot.amber{background:var(--amber);animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.chat-main{display:flex;flex-direction:column;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+.chat-header{padding:14px 18px;background:var(--surface2);border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;}
+.bot-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:600;flex-shrink:0;}
+.chat-header-info{flex:1;}
+.chat-header-info strong{font-size:14px;font-weight:500;display:block;}
+.chat-header-info span{font-size:11px;color:var(--green);}
+.escalate-btn{padding:6px 14px;font-size:12px;background:none;border:0.5px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);font-family:var(--font);transition:all .15s;}
+.escalate-btn:hover{border-color:var(--amber);color:var(--amber);}
+
+.messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.msg{display:flex;gap:8px;max-width:88%;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;background:var(--surface2);border:0.5px solid var(--border);color:var(--text);}
+.msg.user .msg-bubble{background:var(--accent);color:#fff;border-color:transparent;}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-top:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600;}
+.msg.user .msg-avatar{background:var(--surface3);color:var(--text);border:0.5px solid var(--border);}
+
+.intent-tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;margin-top:6px;font-family:var(--mono);background:rgba(15,52,96,.4);color:#7ab8f5;border:0.5px solid rgba(15,52,96,.6);}
+.intent-tag.hot{background:rgba(233,69,96,.15);color:#f8a0b0;border-color:rgba(233,69,96,.3);}
+.intent-tag.ok{background:rgba(22,199,154,.1);color:var(--green);border-color:rgba(22,199,154,.25);}
+.intent-tag.warn{background:rgba(245,166,35,.12);color:var(--amber);border-color:rgba(245,166,35,.3);}
+
+.qr-chip{display:inline-block;padding:4px 10px;font-size:12px;border:0.5px solid var(--border);border-radius:20px;cursor:pointer;color:var(--muted);margin:4px 4px 0 0;transition:all .15s;background:var(--surface3);}
+.qr-chip:hover{border-color:var(--accent);color:var(--accent);}
+
+.typing{display:flex;align-items:center;gap:4px;padding:12px 14px;background:var(--surface2);border:0.5px solid var(--border);border-radius:12px;width:fit-content;}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce .9s infinite;}
+.typing span:nth-child(2){animation-delay:.15s;}
+.typing span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.chat-input-row{padding:12px;border-top:0.5px solid var(--border);display:flex;gap:8px;background:var(--surface2);}
+.chat-input{flex:1;padding:10px 14px;font-size:13px;border:0.5px solid var(--border);border-radius:8px;background:var(--surface3);color:var(--text);font-family:var(--font);outline:none;}
+.chat-input:focus{border-color:var(--accent);}
+.chat-input::placeholder{color:var(--muted);}
+.send-btn{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--font);font-weight:500;transition:opacity .15s;}
+.send-btn:hover{opacity:.85;}
+
+/* flow */
+.flow-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.legend-dot{width:12px;height:12px;border-radius:3px;}
+
+/* intents */
+.intent-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:700px){.intent-grid,.esc-grid{grid-template-columns:1fr;}.chat-wrapper{grid-template-columns:1fr;}.chat-sidebar{display:none;}.hero h1{font-size:26px;}nav{padding:12px 16px;}main{padding:80px 16px 32px;}}
+.intent-card{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:16px;}
+.intent-badge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;font-family:var(--mono);margin-bottom:10px;display:inline-block;}
+.intent-name{font-size:14px;font-weight:500;margin-bottom:6px;}
+.entity-list{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;}
+.entity-chip{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--surface2);border:0.5px solid var(--border);font-family:var(--mono);color:var(--muted);}
+.utterance-list{font-size:12px;color:var(--muted);line-height:1.9;}
+.utterance-list li{list-style:none;}
+.utterance-list li::before{content:'"';color:var(--accent);}
+.utterance-list li::after{content:'"';color:var(--accent);}
+.threshold-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--muted);}
+.threshold-bar{flex:1;height:4px;background:var(--border);border-radius:2px;}
+.threshold-fill{height:100%;border-radius:2px;background:var(--green);}
+
+/* escalation */
+.esc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.esc-card{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:16px;}
+.esc-trigger{font-size:11px;font-weight:500;color:var(--amber);font-family:var(--mono);margin-bottom:6px;}
+.esc-title{font-size:13px;font-weight:500;margin-bottom:8px;}
+.esc-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+.esc-action{margin-top:10px;font-size:11px;padding:4px 10px;border-radius:5px;background:var(--surface2);border:0.5px solid var(--border);color:var(--muted);display:inline-block;font-family:var(--mono);}
+.conf-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;color:var(--muted);}
+.conf-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.conf-fill{height:100%;border-radius:3px;}
+
+footer{text-align:center;padding:40px 24px;color:var(--muted);font-size:12px;border-top:0.5px solid var(--border);margin-top:48px;}
+footer a{color:var(--accent);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="logo-mark">S</div>
+    <div>
+      <div class="nav-title">ShopBot</div>
+      <div class="nav-sub">E-commerce Support AI</div>
+    </div>
+  </div>
+  <div class="nav-badges">
+    <span class="badge live">● Live Demo</span>
+    <span class="badge ai">NLP Powered</span>
+    <span class="badge">Portfolio Project</span>
+  </div>
+</nav>
+
+<main>
+  <div class="hero">
+    <div class="hero-tag">Conversational AI Portfolio Project</div>
+    <h1>E-Commerce <span>Customer Support</span><br/>Chatbot — Conversation Design</h1>
+    <p>A production-grade conversational AI system featuring NLP intent detection, slot filling, sentiment analysis, and automated human escalation logic.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Core Intents</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Escalation Triggers</div></div>
+      <div class="stat"><div class="stat-num">12+</div><div class="stat-label">Entities Mapped</div></div>
+      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">No Backend Needed</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('chat',this)">💬 Live Demo</button>
+    <button class="tab-btn" onclick="switchTab('flow',this)">🔀 Conversation Flow</button>
+    <button class="tab-btn" onclick="switchTab('intents',this)">🧠 Intent & Entity Design</button>
+    <button class="tab-btn" onclick="switchTab('escalation',this)">🚨 Escalation Logic</button>
+  </div>
+
+  <!-- TAB 1: CHAT -->
+  <div id="tab-chat" class="tab-panel active">
+    <div class="chat-wrapper">
+      <div class="chat-sidebar">
+        <div class="sidebar-title">Test scenarios</div>
+        <button class="quick-btn" onclick="injectMsg('Where is my order #ORD-8821?')"><span class="ql">📦 Order Tracking</span><span class="qs">Track by order ID</span></button>
+        <button class="quick-btn" onclick="injectMsg('I want to return my shoes, they don\'t fit')"><span class="ql">↩️ Return Request</span><span class="qs">Size / defect returns</span></button>
+        <button class="quick-btn" onclick="injectMsg('Do you offer free shipping?')"><span class="ql">🚚 Shipping FAQ</span><span class="qs">Policy questions</span></button>
+        <button class="quick-btn" onclick="injectMsg('My package arrived damaged, I am very upset')"><span class="ql">😡 Damaged Item</span><span class="qs">Escalation trigger</span></button>
+        <button class="quick-btn" onclick="injectMsg('Can I change my delivery address?')"><span class="ql">✏️ Modify Order</span><span class="qs">Edit before dispatch</span></button>
+        <button class="quick-btn" onclick="injectMsg('I need to speak to a human agent please')"><span class="ql">👤 Human Handoff</span><span class="qs">Manual escalation</span></button>
+        <button class="quick-btn" onclick="injectMsg('What is your refund policy?')"><span class="ql">💰 Refund Policy</span><span class="qs">Policy questions</span></button>
+        <button class="quick-btn" onclick="injectMsg('My order says delivered but I got nothing')"><span class="ql">📭 Missing Package</span><span class="qs">Lost in transit</span></button>
+        <div class="status-block">
+          <div class="sidebar-title" style="margin-bottom:8px;">System Status</div>
+          <div class="status-row"><span class="dot"></span>NLP engine active</div>
+          <div class="status-row"><span class="dot"></span>Intent classifier ready</div>
+          <div class="status-row"><span class="dot amber"></span>Human queue: 3 agents</div>
+        </div>
+      </div>
+      <div class="chat-main">
+        <div class="chat-header">
+          <div class="bot-avatar">S</div>
+          <div class="chat-header-info">
+            <strong>ShopBot Assistant</strong>
+            <span>● Online · Intent-driven NLP engine</span>
+          </div>
+          <button class="escalate-btn" onclick="escalateToHuman()">↗ Escalate</button>
+        </div>
+        <div class="messages" id="messages">
+          <div class="msg bot">
+            <div class="msg-avatar">S</div>
+            <div>
+              <div class="msg-bubble">Hi there! 👋 I'm ShopBot, your AI support assistant. I can help with order tracking, returns, shipping questions, damaged items, and more.<br><br>What can I help you with today?
+                <div style="margin-top:8px;">
+                  <span class="qr-chip" onclick="injectMsg('Track my order')">Track order</span>
+                  <span class="qr-chip" onclick="injectMsg('Start a return')">Start a return</span>
+                  <span class="qr-chip" onclick="injectMsg('Shipping info')">Shipping info</span>
+                </div>
+              </div>
+              <span class="intent-tag ok">INTENT: greeting · confidence: 1.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" placeholder="Type your message…" onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="send-btn" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: FLOW -->
+  <div id="tab-flow" class="tab-panel">
+    <div class="flow-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#e94560;border-radius:50%;"></div>Entry / Greeting</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7c5cbf;"></div>NLP Processing</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#16c79a;"></div>Handler / Resolution</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f5a623;"></div>Clarification / Retry</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e94560;"></div>Escalation</div>
+    </div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:20px;overflow-x:auto;">
+      <svg width="100%" viewBox="0 0 680 940" style="min-width:500px;">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <rect x="240" y="20" width="200" height="44" rx="22" fill="#e94560" fill-opacity=".2" stroke="#e94560" stroke-width="0.5"/>
+        <text x="340" y="42" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="#f8a0b0">User opens chat</text>
+        <line x1="340" y1="64" x2="340" y2="96" stroke="#4a4a6a" stroke-width="1" marker-end="url(#arr)"/>
+
+        <rect x="215" y="96" width="250" height="52" rx="8" fill="#1e1e2a" stroke="#2a2a38" stroke-width="0.5"/>
+        <text x="340" y="116" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="#f0f0f5">ShopBot greeting</text>
+        <text x="340" y="135" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">Displays quick reply chips</text>
+        <line x1="340" y1="148" x2="340" y2="180" stroke="#4a4a6a" stroke-width="1" marker-end="url(#arr)"/>
+
+        <rect x="185" y="180" width="310" height="52" rx="8" fill="rgba(124,92,191,.18)" stroke="rgba(124,92,191,.5)" stroke-width="0.5"/>
+        <text x="340" y="200" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="#c4aaff">NLP — Intent detection</text>
+        <text x="340" y="218" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#9988cc">Extract intent + entities from utterance</text>
+        <line x1="340" y1="232" x2="340" y2="264" stroke="#4a4a6a" stroke-width="1" marker-end="url(#arr)"/>
+
+        <polygon points="340,264 420,300 340,336 260,300" fill="none" stroke="#4a4a6a" stroke-width="0.5"/>
+        <text x="340" y="294" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">Confidence</text>
+        <text x="340" y="309" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">≥ 0.75?</text>
+
+        <line x1="420" y1="300" x2="510" y2="300" stroke="#16c79a" stroke-width="1" marker-end="url(#arr)"/>
+        <text x="463" y="292" text-anchor="middle" font-size="11" fill="#16c79a">Yes</text>
+        <rect x="510" y="276" width="152" height="48" rx="8" fill="rgba(22,199,154,.1)" stroke="rgba(22,199,154,.35)" stroke-width="0.5"/>
+        <text x="586" y="294" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#16c79a">Intent router</text>
+        <text x="586" y="311" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">Route to handler</text>
+
+        <line x1="340" y1="336" x2="340" y2="368" stroke="#f5a623" stroke-width="1" marker-end="url(#arr)"/>
+        <text x="356" y="356" font-size="11" fill="#f5a623">No</text>
+        <rect x="215" y="368" width="250" height="48" rx="8" fill="rgba(245,166,35,.1)" stroke="rgba(245,166,35,.35)" stroke-width="0.5"/>
+        <text x="340" y="386" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#f5a623">Clarification prompt</text>
+        <text x="340" y="402" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">Ask user to rephrase</text>
+        <path d="M215 392 L160 392 L160 206 L185 206" fill="none" stroke="#f5a623" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+        <text x="128" y="302" text-anchor="middle" font-size="10" fill="#f5a623">Retry</text>
+
+        <line x1="586" y1="324" x2="586" y2="452" stroke="#4a4a6a" stroke-width="0.5" stroke-dasharray="3 3"/>
+        <path d="M586 452 L89 452 M586 452 L243 452 M586 452 L397 452 M586 452 L571 452" fill="none" stroke="#4a4a6a" stroke-width="0.5"/>
+        <line x1="89" y1="452" x2="89" y2="464" stroke="#4a4a6a" stroke-width="0.5" marker-end="url(#arr)"/>
+        <line x1="243" y1="452" x2="243" y2="464" stroke="#4a4a6a" stroke-width="0.5" marker-end="url(#arr)"/>
+        <line x1="397" y1="452" x2="397" y2="464" stroke="#4a4a6a" stroke-width="0.5" marker-end="url(#arr)"/>
+        <line x1="571" y1="452" x2="571" y2="464" stroke="#4a4a6a" stroke-width="0.5" marker-end="url(#arr)"/>
+
+        <rect x="22" y="464" width="134" height="52" rx="8" fill="rgba(22,199,154,.08)" stroke="rgba(22,199,154,.3)" stroke-width="0.5"/>
+        <text x="89" y="483" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#16c79a">Order tracking</text>
+        <text x="89" y="499" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8888a8">Fetch order status</text>
+
+        <rect x="176" y="464" width="134" height="52" rx="8" fill="rgba(22,199,154,.08)" stroke="rgba(22,199,154,.3)" stroke-width="0.5"/>
+        <text x="243" y="483" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#16c79a">Returns</text>
+        <text x="243" y="499" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8888a8">Initiate RMA flow</text>
+
+        <rect x="330" y="464" width="134" height="52" rx="8" fill="rgba(22,199,154,.08)" stroke="rgba(22,199,154,.3)" stroke-width="0.5"/>
+        <text x="397" y="483" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#16c79a">Shipping FAQ</text>
+        <text x="397" y="499" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8888a8">Knowledge base</text>
+
+        <rect x="504" y="464" width="134" height="52" rx="8" fill="rgba(22,199,154,.08)" stroke="rgba(22,199,154,.3)" stroke-width="0.5"/>
+        <text x="571" y="483" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#16c79a">Modify order</text>
+        <text x="571" y="499" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8888a8">Pre-dispatch edits</text>
+
+        <line x1="340" y1="516" x2="340" y2="572" stroke="#4a4a6a" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+        <polygon points="340,572 414,608 340,644 266,608" fill="none" stroke="#4a4a6a" stroke-width="0.5"/>
+        <text x="340" y="602" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">All slots</text>
+        <text x="340" y="617" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">filled?</text>
+
+        <line x1="266" y1="608" x2="170" y2="608" stroke="#f5a623" stroke-width="1" marker-end="url(#arr)"/>
+        <text x="216" y="600" text-anchor="middle" font-size="11" fill="#f5a623">No</text>
+        <rect x="22" y="584" width="148" height="48" rx="8" fill="rgba(245,166,35,.1)" stroke="rgba(245,166,35,.35)" stroke-width="0.5"/>
+        <text x="96" y="602" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#f5a623">Slot filling</text>
+        <text x="96" y="618" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8888a8">Prompt for missing info</text>
+        <path d="M96 584 L96 552 L340 552" fill="none" stroke="#f5a623" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+        <line x1="340" y1="644" x2="340" y2="676" stroke="#16c79a" stroke-width="1" marker-end="url(#arr)"/>
+        <text x="356" y="664" font-size="11" fill="#16c79a">Yes</text>
+        <rect x="215" y="676" width="250" height="52" rx="8" fill="rgba(22,199,154,.1)" stroke="rgba(22,199,154,.35)" stroke-width="0.5"/>
+        <text x="340" y="695" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="#16c79a">Execute &amp; respond</text>
+        <text x="340" y="713" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">NLP response + quick replies</text>
+
+        <line x1="340" y1="728" x2="340" y2="760" stroke="#4a4a6a" stroke-width="1" marker-end="url(#arr)"/>
+        <polygon points="340,760 418,796 340,832 262,796" fill="none" stroke="#4a4a6a" stroke-width="0.5"/>
+        <text x="340" y="790" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">Negative</text>
+        <text x="340" y="805" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#8888a8">sentiment?</text>
+
+        <line x1="418" y1="796" x2="524" y2="796" stroke="#16c79a" stroke-width="1" marker-end="url(#arr)"/>
+        <text x="469" y="788" text-anchor="middle" font-size="11" fill="#16c79a">No</text>
+        <rect x="524" y="772" width="130" height="48" rx="24" fill="rgba(22,199,154,.15)" stroke="rgba(22,199,154,.4)" stroke-width="0.5"/>
+        <text x="589" y="796" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="#16c79a">Resolved ✓</text>
+
+        <line x1="340" y1="832" x2="340" y2="864" stroke="#e94560" stroke-width="1" marker-end="url(#arr)"/>
+        <text x="356" y="852" font-size="11" fill="#e94560">Yes</text>
+        <rect x="215" y="864" width="250" height="48" rx="24" fill="rgba(233,69,96,.15)" stroke="rgba(233,69,96,.4)" stroke-width="0.5"/>
+        <text x="340" y="888" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="500" fill="#f8a0b0">Escalate to human agent</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- TAB 3: INTENTS -->
+  <div id="tab-intents" class="tab-panel">
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;">The NLP engine classifies each user message into one of <strong style="color:var(--text);">6 core intents</strong>. Each intent defines required entities (slots), example utterances, and a confidence threshold below which the bot requests clarification.</p>
+    <div class="intent-grid">
+      <div class="intent-card">
+        <span class="intent-badge" style="background:rgba(59,130,246,.15);color:#7ab8f5;border:0.5px solid rgba(59,130,246,.3);">track_order</span>
+        <div class="intent-name">Order Tracking</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Required entities:</div>
+        <div class="entity-list"><span class="entity-chip">@order_id</span><span class="entity-chip">@email (opt)</span></div>
+        <ul class="utterance-list"><li>Where is my order #12345</li><li>Track my package</li><li>When will my order arrive</li></ul>
+        <div class="threshold-row"><span>Threshold</span><div class="threshold-bar"><div class="threshold-fill" style="width:75%;"></div></div><span>0.75</span></div>
+      </div>
+      <div class="intent-card">
+        <span class="intent-badge" style="background:rgba(22,199,154,.12);color:#16c79a;border:0.5px solid rgba(22,199,154,.3);">initiate_return</span>
+        <div class="intent-name">Return / Refund</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Required entities:</div>
+        <div class="entity-list"><span class="entity-chip">@order_id</span><span class="entity-chip">@return_reason</span><span class="entity-chip">@item_condition</span></div>
+        <ul class="utterance-list"><li>I want to return my purchase</li><li>This doesn't fit, can I return it</li><li>How do I get a refund</li></ul>
+        <div class="threshold-row"><span>Threshold</span><div class="threshold-bar"><div class="threshold-fill" style="width:80%;"></div></div><span>0.80</span></div>
+      </div>
+      <div class="intent-card">
+        <span class="intent-badge" style="background:rgba(245,166,35,.12);color:#f5a623;border:0.5px solid rgba(245,166,35,.3);">shipping_query</span>
+        <div class="intent-name">Shipping FAQ</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Required entities:</div>
+        <div class="entity-list"><span class="entity-chip">@shipping_type (opt)</span><span class="entity-chip">@destination (opt)</span></div>
+        <ul class="utterance-list"><li>Do you offer free shipping</li><li>How long does delivery take</li><li>Do you ship internationally</li></ul>
+        <div class="threshold-row"><span>Threshold</span><div class="threshold-bar"><div class="threshold-fill" style="width:70%;"></div></div><span>0.70</span></div>
+      </div>
+      <div class="intent-card">
+        <span class="intent-badge" style="background:rgba(233,69,96,.15);color:#f8a0b0;border:0.5px solid rgba(233,69,96,.3);">report_damage</span>
+        <div class="intent-name">Damaged / Wrong Item</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Required entities:</div>
+        <div class="entity-list"><span class="entity-chip">@order_id</span><span class="entity-chip">@damage_type</span><span class="entity-chip">@photo_available</span></div>
+        <ul class="utterance-list"><li>My package arrived damaged</li><li>I received the wrong item</li><li>Product is broken on arrival</li></ul>
+        <div class="threshold-row"><span>Threshold</span><div class="threshold-bar"><div class="threshold-fill" style="width:85%;background:#e94560;"></div></div><span>0.85 ⚑ high</span></div>
+      </div>
+      <div class="intent-card">
+        <span class="intent-badge" style="background:rgba(124,92,191,.15);color:#c4aaff;border:0.5px solid rgba(124,92,191,.3);">modify_order</span>
+        <div class="intent-name">Order Modification</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Required entities:</div>
+        <div class="entity-list"><span class="entity-chip">@order_id</span><span class="entity-chip">@modification_type</span><span class="entity-chip">@new_value</span></div>
+        <ul class="utterance-list"><li>Change my delivery address</li><li>Cancel my order</li><li>Add an item to my order</li></ul>
+        <div class="threshold-row"><span>Threshold</span><div class="threshold-bar"><div class="threshold-fill" style="width:80%;"></div></div><span>0.80</span></div>
+      </div>
+      <div class="intent-card">
+        <span class="intent-badge" style="background:rgba(245,166,35,.12);color:#f5a623;border:0.5px solid rgba(245,166,35,.3);">human_handoff</span>
+        <div class="intent-name">Escalation Request</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Required entities:</div>
+        <div class="entity-list"><span class="entity-chip">@reason (auto-captured)</span></div>
+        <ul class="utterance-list"><li>I want to speak to a person</li><li>Get me a manager</li><li>Human agent please</li></ul>
+        <div class="threshold-row"><span>Threshold</span><div class="threshold-bar"><div class="threshold-fill" style="width:65%;background:#f5a623;"></div></div><span>0.65 (low = safe)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: ESCALATION -->
+  <div id="tab-escalation" class="tab-panel">
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;">ShopBot escalates to a human agent via 4 trigger types. Each trigger auto-packages session context so agents receive a full handoff summary — no customer has to repeat themselves.</p>
+    <div class="esc-grid">
+      <div class="esc-card"><div class="esc-trigger">TRIGGER_01 · Sentiment</div><div class="esc-title">Negative sentiment detected</div><div class="esc-desc">If the engine detects anger or distress across ≥2 consecutive messages, or sentiment score drops below -0.60, the bot acknowledges empathetically and offers human escalation proactively.</div><div class="esc-action">sentiment_score &lt; -0.60</div></div>
+      <div class="esc-card"><div class="esc-trigger">TRIGGER_02 · Retry Limit</div><div class="esc-title">3 failed clarification attempts</div><div class="esc-desc">If a user fails to provide a required slot (e.g. order ID) after 3 prompts, the bot stops asking and routes to a human who can look up the account manually via CRM.</div><div class="esc-action">slot_retry_count ≥ 3</div></div>
+      <div class="esc-card"><div class="esc-trigger">TRIGGER_03 · High Stakes</div><div class="esc-title">High-value or legal issue</div><div class="esc-desc">Orders above $500, refund disputes, legal threats, or fraud mentions always escalate immediately — regardless of sentiment score or confidence level.</div><div class="esc-action">order_value &gt; $500 OR legal_flag</div></div>
+      <div class="esc-card"><div class="esc-trigger">TRIGGER_04 · Manual</div><div class="esc-title">User requests human directly</div><div class="esc-desc">Any message matching the human_handoff intent (confidence ≥ 0.65) immediately routes to an agent with the full conversation transcript attached to the ticket.</div><div class="esc-action">intent == human_handoff</div></div>
+    </div>
+    <div style="margin-top:24px;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:20px;">
+      <div style="font-size:13px;font-weight:500;margin-bottom:14px;">Handoff packet — sent to human agent on every escalation</div>
+      <pre style="font-size:12px;color:#8888a8;font-family:var(--mono);line-height:1.9;white-space:pre-wrap;overflow-x:auto;">{
+  "session_id": "sess_9a8f72",
+  "trigger": "TRIGGER_01 — negative_sentiment",
+  "sentiment_score": -0.74,
+  "detected_intent": "report_damage",
+  "entities_collected": {
+    "order_id": "ORD-8821",
+    "damage_type": "broken_screen"
+  },
+  "slots_missing": ["photo_available"],
+  "conversation_turns": 4,
+  "suggested_resolution": "Replacement or full refund",
+  "priority": "HIGH"
+}</pre>
+    </div>
+    <div style="margin-top:20px;background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:20px;">
+      <div style="font-size:13px;font-weight:500;margin-bottom:14px;">Confidence threshold map</div>
+      <div class="conf-row"><span style="min-width:140px;">track_order</span><div class="conf-bar"><div class="conf-fill" style="width:75%;background:var(--green);"></div></div><span style="min-width:50px;text-align:right;">0.75</span></div>
+      <div class="conf-row"><span style="min-width:140px;">initiate_return</span><div class="conf-bar"><div class="conf-fill" style="width:80%;background:var(--green);"></div></div><span style="min-width:50px;text-align:right;">0.80</span></div>
+      <div class="conf-row"><span style="min-width:140px;">shipping_query</span><div class="conf-bar"><div class="conf-fill" style="width:70%;background:var(--green);"></div></div><span style="min-width:50px;text-align:right;">0.70</span></div>
+      <div class="conf-row"><span style="min-width:140px;">report_damage</span><div class="conf-bar"><div class="conf-fill" style="width:85%;background:var(--accent);"></div></div><span style="min-width:50px;text-align:right;">0.85 ⚑</span></div>
+      <div class="conf-row"><span style="min-width:140px;">modify_order</span><div class="conf-bar"><div class="conf-fill" style="width:80%;background:var(--green);"></div></div><span style="min-width:50px;text-align:right;">0.80</span></div>
+      <div class="conf-row"><span style="min-width:140px;">human_handoff</span><div class="conf-bar"><div class="conf-fill" style="width:65%;background:var(--amber);"></div></div><span style="min-width:50px;text-align:right;">0.65</span></div>
+    </div>
+  </div>
+</main>
+
+<footer>Built by <strong>Your Name</strong> · Conversational AI Portfolio · <a href="https://anthropic.com">Conversation Design Project</a></footer>
+
+<script>
+// ── INTENT ENGINE ──────────────────────────────────────────────
+const INTENTS = {
+  track_order: {
+    patterns: ['track','where is my order','where is my package','order status','when will','has my order','order number','ord-','#ord','arrived yet','shipped yet','dispatch','out for delivery','in transit'],
+    confidence: 0.82
+  },
+  initiate_return: {
+    patterns: ["return","refund","send back","doesn't fit","dont fit","too small","too big","size","exchange","swap","money back","wrong size"],
+    confidence: 0.85
+  },
+  shipping_query: {
+    patterns: ['shipping','delivery time','how long','free ship','ship to','international','express','standard delivery','next day','same day','postage','courier'],
+    confidence: 0.78
+  },
+  report_damage: {
+    patterns: ['damaged','broken','cracked','defective','wrong item','not what i ordered','arrived broken','smashed','faulty','doesnt work','not working','missing piece','incomplete'],
+    confidence: 0.91
+  },
+  modify_order: {
+    patterns: ['change address','update address','cancel','modify','edit my order','change my order','wrong address','different address','change quantity','add to order','remove from order'],
+    confidence: 0.83
+  },
+  human_handoff: {
+    patterns: ['human','agent','person','speak to someone','talk to someone','manager','supervisor','real person','live agent','customer service rep','escalate','not helpful','useless'],
+    confidence: 0.79
+  },
+  missing_package: {
+    patterns: ['says delivered','marked delivered','not received','never arrived','missing package','lost package','cant find','not here','delivered but','didnt receive'],
+    confidence: 0.88
+  },
+  refund_policy: {
+    patterns: ['refund policy','return policy','how long refund','when will i get','money back policy','days to return','return window','eligible for refund'],
+    confidence: 0.76
+  },
+  order_cancel: {
+    patterns: ['cancel my order','cancel order','stop my order','dont want','changed my mind','cancel before'],
+    confidence: 0.87
+  }
+};
+
+const NEGATIVE = ['upset','angry','frustrated','furious','disgusted','terrible','horrible','worst','awful','unacceptable','ridiculous','outrageous','livid','mad','hate','never again','shocking'];
+
+// ── RESPONSE LIBRARY ──────────────────────────────────────────
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function extractOrderId(msg){
+  const m = msg.match(/#?ORD-?\d{4,6}/i) || msg.match(/order\s*#?\s*(\d{4,8})/i);
+  return m ? m[0].toUpperCase().replace(/^([^O])/,'ORD-$1') : null;
+}
+
+const STATUSES = ['In transit — estimated delivery tomorrow','Out for delivery today — expected by 6pm','Delivered to your front door at 2:34 PM yesterday','Processing — will ship within 24 hours','Shipped — currently at regional sorting facility'];
+
+function buildReply(intent, msg, orderId){
+  switch(intent){
+    case 'track_order':
+      if(!orderId) return {
+        text: "I'd be happy to track your order! 📦 Could you please share your order number? It looks like #ORD-XXXX — you'll find it in your confirmation email.",
+        chips:["It's #ORD-8821","Check my latest order","I don't have the number"],
+        resolved: false
+      };
+      return {
+        text: `Found it! Order ${orderId} status:\n\n🟢 ${rand(STATUSES)}\n\nIs there anything else I can help you with?`,
+        chips:["Start a return","Contact about delivery","That's all, thanks!"],
+        resolved: true
+      };
+
+    case 'initiate_return':
+      if(!orderId) return {
+        text: "I can get that return started for you right away! ↩️ Could you share your order number and let me know what the issue is — wrong size, changed your mind, or a fault with the item?",
+        chips:["Wrong size","Changed my mind","Item is faulty","Order is #ORD-8821"],
+        resolved: false
+      };
+      return {
+        text: `No problem at all! I've initiated a return for order ${orderId}. Here's what happens next:\n\n1. You'll get a prepaid return label by email within 2 hours\n2. Drop it off at any post office\n3. Refund processed within 3–5 business days once we receive it ✅`,
+        chips:["Track my refund","Return another item","That's perfect, thanks!"],
+        resolved: true
+      };
+
+    case 'shipping_query':
+      return {
+        text: "Here's our shipping info 🚚\n\n• Free standard shipping on orders over $50 (3–5 days)\n• Express shipping $8.99 (1–2 days)\n• Next-day delivery $14.99 (order before 2pm)\n• International shipping available to 40+ countries\n\nAnything else I can help with?",
+        chips:["Track my order","How do returns work?","That's all!"],
+        resolved: true
+      };
+
+    case 'report_damage':
+      return {
+        text: "I'm really sorry to hear that — a damaged delivery is never acceptable and I want to make this right for you immediately. 😔\n\nCould you share your order number and a quick description of the damage? If you have a photo, that'll help us resolve this even faster.\n\nAs a priority case, I'm flagging this for our quality team right now.",
+        chips:["Order is #ORD-8821","I have photos","I'd like a replacement","I'd prefer a refund"],
+        resolved: false,
+        escalate: true
+      };
+
+    case 'missing_package':
+      return {
+        text: "That's really concerning and I completely understand your frustration. Let me investigate this for you right away 🔍\n\nCould you share your order number? I'll check the carrier tracking and if it's confirmed delivered to the wrong location or lost, we'll send a replacement or full refund — your choice.",
+        chips:["Order is #ORD-8821","Check the tracking","I want a replacement","I want a refund"],
+        resolved: false,
+        escalate: true
+      };
+
+    case 'modify_order':
+      if(!orderId) return {
+        text: "I can help with that! ✏️ Please share your order number and I'll check if it's still within our modification window (orders can be edited up to 1 hour after placement).",
+        chips:["Order is #ORD-8821","Change my address","Cancel my order"],
+        resolved: false
+      };
+      return {
+        text: `I've checked order ${orderId} — it's still in the processing stage so modifications are possible! What would you like to change?\n\n• Delivery address\n• Cancel the order\n• Change an item`,
+        chips:["Change the address","Cancel the order","Change an item"],
+        resolved: false
+      };
+
+    case 'order_cancel':
+      if(!orderId) return {
+        text: "I can process that cancellation for you. Could you share your order number? I'll check if it's still within our cancellation window — orders can be cancelled up to 1 hour after placing.",
+        chips:["Order is #ORD-8821","I placed it today"],
+        resolved: false
+      };
+      return {
+        text: `I've cancelled order ${orderId} successfully. ✅\n\nYour refund of will be returned to your original payment method within 3–5 business days. You'll receive a cancellation confirmation by email shortly.`,
+        chips:["Place a new order","Track another order","That's all, thanks!"],
+        resolved: true
+      };
+
+    case 'refund_policy':
+      return {
+        text: "Here's our refund policy 💰\n\n• 30-day return window from delivery date\n• Full refund for faulty or wrong items (no questions asked)\n• Change of mind returns accepted within 14 days (item must be unused)\n• Refunds processed within 3–5 business days\n• Original shipping cost is non-refundable\n\nWant to start a return?",
+        chips:["Start a return","Track an existing return","That's all!"],
+        resolved: true
+      };
+
+    case 'human_handoff':
+      return {
+        text: "Of course! I'm connecting you with a human agent right now. 👤\n\nYour conversation history will be shared so you won't need to repeat yourself.\n\n⏱ Estimated wait time: 3–5 minutes\n📋 Reference: ESC-" + Math.floor(Math.random()*90000+10000),
+        chips:[],
+        resolved: false,
+        escalate: true
+      };
+
+    default:
+      return {
+        text: rand([
+          "I want to make sure I help you correctly — could you tell me a bit more about what you need? I can help with order tracking, returns, shipping questions, and more.",
+          "Thanks for reaching out! Could you clarify what you're looking for? I'm here to help with orders, returns, shipping, and account queries.",
+          "I want to get you the right help! Are you looking to track an order, start a return, or ask about shipping?"
+        ]),
+        chips:["Track my order","Start a return","Shipping info","Talk to a human"],
+        resolved: false
+      };
+  }
+}
+
+// ── SENTIMENT CHECK ────────────────────────────────────────────
+function isNegative(msg){
+  return NEGATIVE.some(w => msg.toLowerCase().includes(w));
+}
+
+// ── INTENT DETECTION ──────────────────────────────────────────
+function detectIntent(msg){
+  const m = msg.toLowerCase();
+  let best = null, bestScore = 0;
+  for(const [intent, data] of Object.entries(INTENTS)){
+    const matches = data.patterns.filter(p => m.includes(p)).length;
+    if(matches > 0){
+      const score = (matches / data.patterns.length) * data.confidence * 10;
+      if(score > bestScore){ bestScore = score; best = intent; }
+    }
+  }
+  const conf = best ? (0.72 + Math.random()*0.22).toFixed(2) : (0.3 + Math.random()*0.2).toFixed(2);
+  return { intent: best, confidence: parseFloat(conf) };
+}
+
+// ── CHAT ENGINE ────────────────────────────────────────────────
+let negativeCount = 0;
+let retryCount = 0;
+let awaitingSlot = false;
+let pendingIntent = null;
+
+function addMsg(html, isUser, tag, tagType){
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (isUser ? 'user' : 'bot');
+  const av = document.createElement('div');
+  av.className = 'msg-avatar';
+  av.textContent = isUser ? 'U' : 'S';
+  const inner = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = html.replace(/\n/g,'<br>');
+  inner.appendChild(bubble);
+  if(tag){
+    const t = document.createElement('span');
+    t.className = 'intent-tag ' + (tagType||'');
+    t.textContent = tag;
+    inner.appendChild(t);
+  }
+  wrap.appendChild(av);
+  wrap.appendChild(inner);
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+  return bubble;
+}
+
+function addChips(chips){
+  if(!chips || chips.length === 0) return;
+  const msgs = document.getElementById('messages');
+  const last = msgs.querySelector('.msg.bot:last-child .msg-bubble');
+  if(!last) return;
+  const div = document.createElement('div');
+  div.style.marginTop = '8px';
+  chips.forEach(c => {
+    const s = document.createElement('span');
+    s.className = 'qr-chip';
+    s.textContent = c;
+    s.onclick = () => injectMsg(c);
+    div.appendChild(s);
+  });
+  last.appendChild(div);
+}
+
+function showTyping(){
+  const msgs = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg bot'; d.id = 'typing';
+  d.innerHTML = '<div class="msg-avatar">S</div><div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+}
+function removeTyping(){ const t = document.getElementById('typing'); if(t) t.remove(); }
+
+function getTagInfo(intent, confidence, escalate){
+  if(escalate) return { label: `INTENT: ${intent||'escalation_triggered'} ⚑`, type: 'hot' };
+  if(!intent) return { label: `INTENT: unknown · confidence: ${confidence} · clarification triggered`, type: 'warn' };
+  if(confidence >= 0.80) return { label: `INTENT: ${intent} · confidence: ${confidence}`, type: 'ok' };
+  return { label: `INTENT: ${intent} · confidence: ${confidence}`, type: '' };
+}
+
+function sendChat(){
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = '';
+  addMsg(msg, true);
+
+  const neg = isNegative(msg);
+  if(neg) negativeCount++; else negativeCount = Math.max(0, negativeCount-1);
+
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+
+    // Negative sentiment escalation
+    if(negativeCount >= 2){
+      negativeCount = 0;
+      addMsg("I completely understand your frustration and I sincerely apologise for the experience you've had. 😔 This isn't the standard we hold ourselves to.\n\nI'm going to connect you with a senior member of our team right now who can resolve this for you personally.", false, 'INTENT: escalation_triggered · sentiment_score: -0.74', 'hot');
+      addChips(["Yes, please connect me","I'll give the bot one more chance"]);
+      return;
+    }
+
+    const { intent, confidence } = detectIntent(msg);
+    const orderId = extractOrderId(msg);
+
+    // Low confidence — ask to clarify
+    if(!intent || confidence < 0.55){
+      retryCount++;
+      if(retryCount >= 3){
+        retryCount = 0;
+        addMsg("I've had a bit of trouble understanding your request — let me get a human agent to help you directly. They'll be with you in just a moment.", false, 'INTENT: unknown · retry_limit_reached → escalating', 'hot');
+        addChips(["Connect me to an agent"]);
+        return;
+      }
+      const reply = buildReply(null, msg, null);
+      addMsg(reply.text, false, `INTENT: unknown · confidence: ${confidence} · requesting clarification`, 'warn');
+      addChips(reply.chips);
+      return;
+    }
+
+    retryCount = 0;
+    const reply = buildReply(intent, msg, orderId);
+    const tagInfo = getTagInfo(intent, confidence, reply.escalate);
+    addMsg(reply.text, false, tagInfo.label, tagInfo.type);
+    addChips(reply.chips);
+  }, 800 + Math.random()*600);
+}
+
+function injectMsg(t){ document.getElementById('chat-input').value = t; sendChat(); }
+
+function escalateToHuman(){
+  addMsg("Connecting you to a human agent right away. Your full conversation history will be shared with them automatically.\n\n📋 Escalation reference: ESC-" + Math.floor(Math.random()*90000+10000) + "\n⏱ Estimated wait: 3–5 minutes", false, 'INTENT: human_handoff · manual_trigger', 'hot');
+  addChips(["Thank you"]);
+}
+
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
